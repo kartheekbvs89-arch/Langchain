@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat · Enterprise Knowledge Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+  <script src="js/app.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    let activeAgentId = params.get('agent') || 'hr';
+    let activeAgent = AGENTS.find(a => a.id === activeAgentId) || AGENTS[0];
+    let messages = [];
+    let isTyping = false;
+    let backendLive = false;
+    let queryCount = 0;
+
+    async function renderChatPage() {
+      backendLive = await API.isLive();
+
+      const mainContent = `
+        <div class="chat-layout">
+          <aside class="chat-sidebar">
+            <div class="chat-sidebar-header">
+              <h6>Specialist Agents</h6>
+              <p class="text-subtle" style="font-size:0.75rem;">Select an agent to query its knowledge base.</p>
+            </div>
+            <div class="agent-list" id="agentList">
+              ${AGENTS.map(a => `
+                <div class="agent-card ${a.id === activeAgent.id ? 'active' : ''}" data-agent="${a.id}" onclick="switchAgent('${a.id}')">
+                  <div class="agent-icon">${a.initial}</div>
+                  <div style="flex:1; min-width:0;">
+                    <div class="agent-name">${a.name}</div>
+                    <div class="agent-desc">${a.desc}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="chat-history-list">
+              <h6 style="padding:0 var(--space-3) var(--space-3);">Recent Conversations</h6>
+              <div class="chat-history-item">
+                <div class="chat-history-item-title">Leave policy clarification</div>
+                <div class="chat-history-item-meta">HR Agent · 2h ago</div>
+              </div>
+              <div class="chat-history-item">
+                <div class="chat-history-item-title">VPN setup on macOS</div>
+                <div class="chat-history-item-meta">IT Agent · Yesterday</div>
+              </div>
+              <div class="chat-history-item">
+                <div class="chat-history-item-title">Data classification levels</div>
+                <div class="chat-history-item-meta">Policy Agent · 3d ago</div>
+              </div>
+            </div>
+          </aside>
+
+          <section class="chat-main">
+            <div class="chat-header">
+              <div class="chat-header-info">
+                <div class="agent-icon" style="width:40px;height:40px;">${activeAgent.initial}</div>
+                <div>
+                  <h3>${activeAgent.name}</h3>
+                  <div class="text-muted">${activeAgent.desc} · ${backendLive ? 'Live RAG' : 'Mock mode'}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge ${backendLive ? 'badge-success' : 'badge-warning'}">
+                  <span class="badge-dot ${backendLive ? 'active' : ''}"></span>
+                  ${backendLive ? 'Backend live' : 'Mock mode'}
+                </span>
+                <button class="btn-icon" title="New conversation" onclick="clearChat()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="chat-messages" id="messages">
+              ${messages.length === 0 ? renderEmptyState() : renderMessages()}
+            </div>
+
+            <div class="chat-composer">
+              <div class="chat-composer-inner">
+                <div class="composer-input-wrap">
+                  <textarea
+                    id="composerInput"
+                    class="composer-input"
+                    placeholder="${activeAgent.placeholder}"
+                    rows="1"
+                    onkeydown="handleComposerKey(event)"
+                    oninput="autoGrow(this)"
+                  ></textarea>
+                  <button class="composer-send" id="sendBtn" onclick="sendMessage()" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+                </div>
+                <div class="composer-hint">Press Enter to send · Shift+Enter for newline · ${backendLive ? 'Live RAG via LangChain + Chroma' : 'Backend offline — using mock responses'}</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+
+      mountShell('chat', 'Chat Assistant', 'Home / Workspace / Chat', mainContent, '');
+
+      const input = document.getElementById('composerInput');
+      const sendBtn = document.getElementById('sendBtn');
+      input.addEventListener('input', () => {
+        sendBtn.disabled = input.value.trim().length === 0;
+      });
+      input.focus();
+    }
+
+    function renderEmptyState() {
+      return `
+        <div class="empty-chat">
+          <div class="empty-chat-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Ask ${activeAgent.name}</h3>
+            <p>${backendLive
+              ? 'Live RAG pipeline — every answer is grounded in retrieved documents with cosine-similarity scored citations.'
+              : 'Backend is offline. Using mock responses that demonstrate how the RAG pipeline would behave.'}</p>
+          </div>
+          <div class="suggested-prompts">
+            ${activeAgent.suggested.map((p, i) => `
+              <button class="prompt-chip animate-fade-in" style="animation-delay:${i * 80}ms;" onclick="usePrompt('${p.title.replace(/'/g, "\\'")}')">
+                <strong>${p.title}</strong>
+                <span>${p.sub}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMessages() {
+      return messages.map(m => renderMessage(m)).join('');
+    }
+
+    function renderMessage(m) {
+      const isUser = m.role === 'user';
+      const avatar = isUser ? 'U' : activeAgent.initial;
+      return `
+        <div class="message ${isUser ? 'user' : ''}">
+          <div class="message-avatar">${avatar}</div>
+          <div class="message-body">
+            <div class="message-meta">
+              <span class="message-author">${isUser ? 'You' : activeAgent.name}</span>
+              <span class="message-time">${m.time}</span>
+              ${m.latencyMs ? `<span class="text-subtle text-mono" style="font-size:0.6875rem;">· ${m.latencyMs}ms</span>` : ''}
+              ${m.llmProvider ? `<span class="badge badge-primary">${m.llmProvider}</span>` : ''}
+            </div>
+            <div class="message-content">${escapeHtml(m.content)}</div>
+            ${m.sources && m.sources.length ? renderSources(m.sources) : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
+    }
+
+    function renderSources(sources) {
+      return `
+        <div class="message-sources">
+          <div class="message-sources-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Sources retrieved (${sources.length})
+          </div>
+          ${sources.map(s => `
+            <span class="source-chip">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              ${s.document || s.name}
+              ${s.page ? ' · p.' + s.page : ''}
+              ${s.section ? ' · §' + s.section : ''}
+              <span class="score">${typeof s.score === 'number' ? s.score.toFixed(2) : s.score}</span>
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function switchAgent(id) {
+      activeAgentId = id;
+      activeAgent = AGENTS.find(a => a.id === id);
+      messages = [];
+      isTyping = false;
+      queryCount = 0;
+      const url = new URL(location.href);
+      url.searchParams.set('agent', id);
+      history.replaceState({}, '', url);
+      renderChatPage();
+    }
+
+    function clearChat() {
+      messages = [];
+      queryCount = 0;
+      renderChatPage();
+    }
+
+    function usePrompt(title) {
+      const input = document.getElementById('composerInput');
+      const prompt = activeAgent.suggested.find(p => p.title === title);
+      input.value = prompt.sub;
+      document.getElementById('sendBtn').disabled = false;
+      sendMessage();
+    }
+
+    function autoGrow(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+    }
+
+    function handleComposerKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('composerInput');
+      const text = input.value.trim();
+      if (!text || isTyping) return;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      messages.push({ role: 'user', content: text, time: timeStr });
+      input.value = '';
+      input.style.height = 'auto';
+      document.getElementById('sendBtn').disabled = true;
+
+      const msgContainer = document.getElementById('messages');
+      if (msgContainer.querySelector('.empty-chat')) {
+        msgContainer.innerHTML = '';
+      }
+      msgContainer.insertAdjacentHTML('beforeend', renderMessage(messages[messages.length - 1]));
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+
+      isTyping = true;
+      queryCount++;
+      const typingHtml = `
+        <div class="message" id="typingMessage">
+          <div class="message-avatar">${activeAgent.initial}</div>
+          <div class="message-body">
+            <div class="message-meta">
+              <span class="message-author">${activeAgent.name}</span>
+              <span class="message-time">${timeStr}</span>
+            </div>
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      msgContainer.insertAdjacentHTML('beforeend', typingHtml);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+
+      let reply;
+      try {
+        if (backendLive) {
+          const r = await API.chat(text, activeAgent.id);
+          reply = {
+            role: 'agent',
+            content: r.answer,
+            sources: (r.sources || []).map(s => ({
+              document: s.document,
+              page: s.page,
+              section: s.section,
+              score: s.score,
+            })),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            latencyMs: r.latency_ms,
+            llmProvider: 'RAG',
+          };
+        } else {
+          throw new Error('backend offline');
+        }
+      } catch (err) {
+        await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
+        const replyText = activeAgent.mockReplies[queryCount % activeAgent.mockReplies.length];
+        reply = {
+          role: 'agent',
+          content: replyText,
+          sources: generateMockSources(),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          latencyMs: 1200 + Math.floor(Math.random() * 600),
+          llmProvider: 'MOCK',
+        };
+      }
+
+      const typingEl = document.getElementById('typingMessage');
+      if (typingEl) typingEl.remove();
+
+      messages.push(reply);
+      msgContainer.insertAdjacentHTML('beforeend', renderMessage(reply));
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+      isTyping = false;
+    }
+
+    function generateMockSources() {
+      const pools = {
+        hr: [
+          { name: 'HR_Policy_Manual_2024.pdf', page: 14, score: 0.92 },
+          { name: 'Leave_Policy.docx', section: '3.1', score: 0.88 },
+          { name: 'Payroll_Procedure.docx', section: '4.2', score: 0.81 },
+        ],
+        it: [
+          { name: 'IT_SOP_PasswordReset.pdf', page: 1, score: 0.94 },
+          { name: 'IT_Network_Guide_v2.pdf', section: '2', score: 0.87 },
+          { name: 'Asset_Policy.docx', section: '7.3', score: 0.79 },
+        ],
+        policy: [
+          { name: 'InfoSec_Policy_v4.pdf', section: '2', score: 0.95 },
+          { name: 'Code_of_Conduct_2024.pdf', section: '6.4', score: 0.89 },
+          { name: 'Hybrid_Work_Policy_2024.pdf', section: '1', score: 0.83 },
+        ],
+      };
+      const pool = pools[activeAgent.id] || pools.hr;
+      return pool.map(p => ({
+        document: p.name,
+        section: p.section,
+        page: p.page,
+        score: p.score,
+      }));
+    }
+
+    renderChatPage();
+  </script>
+</body>
+</html>

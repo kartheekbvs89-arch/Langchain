@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise Knowledge Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+  <div class="login-shell">
+    <!-- Left: vibrant gradient hero panel -->
+    <section class="login-art">
+      <div class="login-art-brand">
+        <div class="brand-mark">E</div>
+        <div>
+          <div class="brand-name" style="color:#fff;">Enterprise Knowledge Assistant</div>
+          <div class="brand-sub" style="color:rgba(255,255,255,0.7);">RAG · Multi-Agent · GenAI</div>
+        </div>
+      </div>
+
+      <div class="login-art-content">
+        <h1>Ask your enterprise anything.<br /><span style="color:rgba(255,255,255,0.85);">Get grounded answers in seconds.</span></h1>
+        <p>Three specialist AI agents retrieve answers from your vector-indexed documents and respond with traceable, source-cited precision.</p>
+
+        <div class="login-art-features">
+          <div class="login-art-feature">
+            <div class="login-art-feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span>Real-time RAG with source citations</span>
+          </div>
+          <div class="login-art-feature">
+            <div class="login-art-feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span>HR · IT · Policy specialist agents</span>
+          </div>
+          <div class="login-art-feature">
+            <div class="login-art-feature-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span>LangChain orchestration + Chroma vector DB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-art-meta">
+        <div class="login-art-meta-row">
+          <span>Phase</span>
+          <span>2 of 3 · RAG + Multi-Agent</span>
+        </div>
+        <div class="login-art-meta-row">
+          <span>Tech Stack</span>
+          <span>Python · LLMs · LangChain · Cloud</span>
+        </div>
+        <div class="login-art-meta-row">
+          <span>Live Demo</span>
+          <span>kartheekbvs89-arch.github.io/Langchain</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: form panel -->
+    <section class="login-form-wrap">
+      <div class="login-form">
+        <div style="margin-bottom: var(--space-6);">
+          <h2>Welcome back</h2>
+          <p class="form-sub">Sign in to access your enterprise knowledge base.</p>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="email">Email address</label>
+            <input
+              type="email"
+              id="email"
+              class="form-input"
+              placeholder="you@company.com"
+              value="sample123@gmail.com"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <div class="flex items-center justify-between" style="margin-bottom: var(--space-2);">
+              <label class="form-label" for="password" style="margin-bottom: 0;">Password</label>
+              <a href="#" style="font-size:0.75rem; color:var(--color-primary); font-weight:600;">Forgot password?</a>
+            </div>
+            <input
+              type="password"
+              id="password"
+              class="form-input"
+              placeholder="••••••••••••"
+              value="123456"
+              required
+            />
+          </div>
+
+          <div class="flex items-center justify-between mb-6">
+            <label class="flex items-center gap-2" style="font-size:0.8125rem; cursor:pointer; color:var(--color-text-secondary);">
+              <input type="checkbox" id="remember" style="margin:0; accent-color: var(--color-primary);" />
+              Keep me signed in
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Sign in to dashboard
+          </button>
+
+          <div class="login-divider">OR</div>
+
+          <button type="button" class="btn btn-secondary btn-block" onclick="fillDemo()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 5c0 1.66 4 3 9 3s9-1.34 9-3-4-3-9-3-9 1.34-9 3"/></svg>
+            Use demo credentials
+          </button>
+        </form>
+
+        <p style="font-size:0.75rem; color:var(--color-text-subtle); text-align:center; margin-top:var(--space-6);">
+          Phase 2 demo · Backend auto-detected when running locally
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function fillDemo() {
+      document.getElementById('email').value = 'sample123@gmail.com';
+      document.getElementById('password').value = '123456';
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        alert('Please enter credentials.');
+        return;
+      }
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner"></span> Signing in...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const localPart = email.includes('@') ? email.split('@')[0] : email;
+        const userName = localPart
+          .split(/[._\-]/)
+          .filter(Boolean)
+          .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+          .join(' ') || 'User';
+
+        sessionStorage.setItem('eka_user', JSON.stringify({
+          name: userName,
+          email: email.includes('@') ? email : email + '@company.com',
+          loginAt: new Date().toISOString(),
+        }));
+
+        window.location.href = 'chat.html';
+      }, 600);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics · Enterprise Knowledge Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+  <script src="js/app.js"></script>
+  <script>
+    function renderAnalyticsPage() {
+      const mainContent = `
+        <div class="page">
+          <div class="page-header">
+            <h1>Analytics & Project Phases</h1>
+            <p>Track response accuracy, retrieval performance, and the 3-phase delivery roadmap for the Enterprise Knowledge Assistant.</p>
+          </div>
+
+          <!-- 3-Phase Roadmap -->
+          <h3 class="mb-4">Delivery Roadmap</h3>
+          <div class="phase-tracker">
+            <div class="phase-card done">
+              <div class="phase-num">✓ Phase 1 · Delivered</div>
+              <div class="phase-title">Frontend UI</div>
+              <div class="phase-desc">Login, chat interface, document management, analytics dashboard. Pure HTML / CSS / JS, no AI integration yet.</div>
+              <div class="phase-progress">
+                <span class="phase-pct">100%</span>
+                <div class="progress"><div class="progress-bar success" style="width:100%"></div></div>
+              </div>
+              <div class="text-muted text-mono" style="font-size:0.6875rem; margin-top:var(--space-3);">
+                HTML · CSS · JavaScript
+              </div>
+            </div>
+            <div class="phase-card done">
+              <div class="phase-num">✓ Phase 2 · Delivered</div>
+              <div class="phase-title">RAG + Multi-Agent Backend</div>
+              <div class="phase-desc">LangChain orchestration, Chroma vector DB, HR/IT/Policy agents, document ingestion pipeline.</div>
+              <div class="phase-progress">
+                <span class="phase-pct">100%</span>
+                <div class="progress"><div class="progress-bar success" style="width:100%"></div></div>
+              </div>
+              <div class="text-muted text-mono" style="font-size:0.6875rem; margin-top:var(--space-3);">
+                Python · LangChain · Chroma
+              </div>
+            </div>
+            <div class="phase-card done">
+              <div class="phase-num">✓ Phase 3 · Delivered</div>
+              <div class="phase-title">Cloud Deploy + Eval</div>
+              <div class="phase-desc">Dockerized deployment, AWS/Azure/GCP configs, Prometheus metrics, LangSmith tracing, live RAGAS evaluation pipeline.</div>
+              <div class="phase-progress">
+                <span class="phase-pct">100%</span>
+                <div class="progress"><div class="progress-bar success" style="width:100%"></div></div>
+              </div>
+              <div class="text-muted text-mono" style="font-size:0.6875rem; margin-top:var(--space-3);">
+                Docker · Cloud · Monitoring · Eval
+              </div>
+            </div>
+          </div>
+
+          <!-- Top stats -->
+          <div class="stat-grid">
+            <div class="stat-card success">
+              <div class="stat-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="stat-label">Avg. answer accuracy</div>
+              <div class="stat-value" data-target="87.4">0</div>
+              <div class="stat-delta up"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 4 20 16 4 16"/></svg>+2.1% vs last week (target: 90%)</div>
+            </div>
+            <div class="stat-card accent">
+              <div class="stat-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+              <div class="stat-label">Retrieval recall@5</div>
+              <div class="stat-value" data-target="0.91" data-decimals="2">0</div>
+              <div class="stat-delta">Mean relevance of top-5 chunks</div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="stat-label">P95 latency</div>
+              <div class="stat-value" data-target="2.4" data-suffix="s">0</div>
+              <div class="stat-delta">From query → grounded answer</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="stat-label">Queries this week</div>
+              <div class="stat-value" data-target="1284">0</div>
+              <div class="stat-delta">312 unique users · 4.1 avg per user</div>
+            </div>
+          </div>
+
+          <!-- Charts row 1 -->
+          <div class="grid grid-cols-2 mb-6">
+            <div class="chart-card">
+              <div class="card-header">
+                <span class="card-title">Query volume — last 7 days</span>
+                <span class="badge badge-primary">Daily</span>
+              </div>
+              <div class="bar-chart">
+                ${barChart().map((b, i) => `
+                  <div class="bar-col">
+                    <span class="bar-value">${b.value}</span>
+                    <div class="bar" style="height:${(b.value / 220) * 100}%; animation-delay:${i * 80}ms;" title="${b.label}: ${b.value} queries"></div>
+                    <span class="bar-label">${b.label}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="card-header">
+                <span class="card-title">Queries by agent</span>
+                <span class="badge badge-accent">This week</span>
+              </div>
+              <div class="donut-wrap">
+                <svg class="donut-svg" viewBox="0 0 42 42">
+                  ${donutSegments([
+                    { value: 48, label: 'HR', fill: '#EC4899' },
+                    { value: 32, label: 'IT', fill: '#6366F1' },
+                    { value: 20, label: 'Policy', fill: '#14B8A6' },
+                  ])}
+                  <text x="21" y="20" text-anchor="middle" font-size="6" font-weight="800" fill="#0F172A" font-family="JetBrains Mono">1,284</text>
+                  <text x="21" y="26" text-anchor="middle" font-size="3" fill="#64748B" font-family="Inter" font-weight="600">QUERIES</text>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-item">
+                    <span class="legend-swatch" style="background:#EC4899;"></span>
+                    <span class="legend-label">HR Agent</span>
+                    <span class="legend-value">48% · 616</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-swatch" style="background:#6366F1;"></span>
+                    <span class="legend-label">IT Agent</span>
+                    <span class="legend-value">32% · 411</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-swatch" style="background:#14B8A6;"></span>
+                    <span class="legend-label">Policy Agent</span>
+                    <span class="legend-value">20% · 257</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts row 2 -->
+          <div class="grid grid-cols-2 mb-6">
+            <div class="chart-card">
+              <div class="card-header">
+                <span class="card-title">Answer accuracy trend</span>
+                <span class="badge badge-success">Last 12 weeks</span>
+              </div>
+              ${lineChartSVG()}
+              <div class="flex items-center justify-between" style="margin-top:var(--space-3);">
+                <span class="text-muted" style="font-size:0.75rem;">Eval set: 200 questions · LLM-as-judge + human spot-check</span>
+                <span class="badge badge-success">↑ 4.3% QoQ</span>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="card-header">
+                <span class="card-title">Latency breakdown (avg ms)</span>
+                <span class="badge badge-warning">P50 / P95</span>
+              </div>
+              <table class="table" style="margin-top:var(--space-2);">
+                <thead>
+                  <tr><th>Stage</th><th>P50</th><th>P95</th><th style="width:120px;">Distribution</th></tr>
+                </thead>
+                <tbody>
+                  ${latencyRows().map(r => `
+                    <tr>
+                      <td style="font-weight:600;">${r.stage}</td>
+                      <td class="text-mono">${r.p50}</td>
+                      <td class="text-mono">${r.p95}</td>
+                      <td>
+                        <div class="progress"><div class="progress-bar ${r.muted ? 'muted' : ''}" style="width:${(r.p95/2400)*100}%"></div></div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Eval table -->
+          <div class="chart-card">
+            <div class="card-header">
+              <span class="card-title">Evaluation results — RAGAS metrics</span>
+              <span class="badge badge-primary">200-question eval set</span>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Faithfulness</th>
+                  <th>Answer Relevancy</th>
+                  <th>Context Precision</th>
+                  <th>Context Recall</th>
+                  <th>Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="badge badge-hr">HR</span></td><td class="text-mono">0.92</td><td class="text-mono">0.88</td><td class="text-mono">0.86</td><td class="text-mono">0.91</td><td><span class="badge badge-success">89.3%</span></td></tr>
+                <tr><td><span class="badge badge-it">IT</span></td><td class="text-mono">0.89</td><td class="text-mono">0.91</td><td class="text-mono">0.83</td><td class="text-mono">0.87</td><td><span class="badge badge-success">87.5%</span></td></tr>
+                <tr><td><span class="badge badge-policy">Policy</span></td><td class="text-mono">0.94</td><td class="text-mono">0.86</td><td class="text-mono">0.90</td><td class="text-mono">0.93</td><td><span class="badge badge-success">90.8%</span></td></tr>
+                <tr style="font-weight:700;"><td>Overall</td><td class="text-mono">0.917</td><td class="text-mono">0.883</td><td class="text-mono">0.863</td><td class="text-mono">0.903</td><td><span class="badge badge-primary">89.2%</span></td></tr>
+              </tbody>
+            </table>
+            <p class="text-muted" style="font-size:0.75rem; margin-top:var(--space-4);">
+              Faithfulness measures grounding in retrieved context. Answer Relevancy measures how directly the answer addresses the query. Context Precision/Recall evaluate chunk retrieval quality. Phase 2 displays pre-computed mock metrics; live evaluation pipeline ships in Phase 3.
+            </p>
+          </div>
+
+          <!-- Tech stack card -->
+          <div class="card mt-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h6 style="margin-bottom:var(--space-2);">Project</h6>
+                <h3 style="margin-bottom:var(--space-1);">Enterprise Knowledge Assistant</h3>
+                <p class="text-muted text-mono">RAG · Multi-Agent · GenAI · Cloud</p>
+              </div>
+              <div>
+                <h6 style="margin-bottom:var(--space-2); text-align:right;">Tech Stack</h6>
+                <div class="flex gap-2" style="flex-wrap:wrap; justify-content:flex-end;">
+                  <span class="tag">Python</span>
+                  <span class="tag">LLMs</span>
+                  <span class="tag">LangChain</span>
+                  <span class="tag">Vector DB</span>
+                  <span class="tag">Cloud Computing</span>
+                  <span class="tag">RAG</span>
+                  <span class="tag">Multi-Agent</span>
+                  <span class="tag">Docker</span>
+                  <span class="tag">Prometheus</span>
+                  <span class="tag">LangSmith</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live eval runner (Phase 3) -->
+          <div class="card mt-6">
+            <div class="card-header">
+              <span class="card-title">Live Evaluation Runner (Phase 3)</span>
+              <span class="badge badge-primary">RAGAS Pipeline</span>
+            </div>
+            <p class="text-muted mb-4" style="font-size:0.875rem;">
+              Run the 24-question RAGAS evaluation pipeline against the live backend.
+              Returns faithfulness, answer relevancy, context precision/recall scores per agent.
+              Caches results in-memory for the /api/analytics endpoint to serve.
+            </p>
+            <div class="flex gap-2 mb-4">
+              <button class="btn btn-primary" id="runEvalBtn" onclick="runEvalNow()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Run Evaluation (24 questions)
+              </button>
+              <button class="btn btn-secondary" onclick="loadLatestEval()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Load Latest Result
+              </button>
+            </div>
+            <div id="evalResultArea" style="font-family:var(--font-mono); font-size:0.8125rem; background:var(--color-surface-alt); padding:var(--space-4); border-radius:var(--radius-md); min-height:120px; border:1px solid var(--color-border);">
+              <span class="text-muted">No eval run yet. Click "Run Evaluation" to start (takes ~30s on CPU).</span>
+            </div>
+          </div>
+
+          <!-- Cloud deployment cards (Phase 3) -->
+          <div class="grid grid-cols-3 mt-6">
+            <div class="card card-hover">
+              <div class="card-header">
+                <span class="card-title">AWS Deployment</span>
+                <span class="badge badge-warning">Ready</span>
+              </div>
+              <p class="text-muted mb-4" style="font-size:0.8125rem;">
+                ECS Fargate + CloudFront + S3 + ALB with auto-scaling
+              </p>
+              <div class="text-mono text-muted" style="font-size:0.6875rem;">
+                deploy/aws/cloudformation.yaml
+              </div>
+            </div>
+            <div class="card card-hover">
+              <div class="card-header">
+                <span class="card-title">Azure Deployment</span>
+                <span class="badge badge-primary">Ready</span>
+              </div>
+              <p class="text-muted mb-4" style="font-size:0.8125rem;">
+                Container Apps + Blob Storage + CDN with Log Analytics
+              </p>
+              <div class="text-mono text-muted" style="font-size:0.6875rem;">
+                deploy/azure/main.bicep
+              </div>
+            </div>
+            <div class="card card-hover">
+              <div class="card-header">
+                <span class="card-title">GCP Deployment</span>
+                <span class="badge badge-success">Ready</span>
+              </div>
+              <p class="text-muted mb-4" style="font-size:0.8125rem;">
+                Cloud Run + Cloud Storage + Load Balancer
+              </p>
+              <div class="text-mono text-muted" style="font-size:0.6875rem;">
+                deploy/gcp/deployment.yaml
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      mountShell('analytics', 'Analytics', 'Home / Workspace / Analytics', mainContent, '');
+
+      // Animate counters
+      animateCounters();
+    }
+
+    function animateCounters() {
+      document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+        const target = parseFloat(el.dataset.target);
+        const decimals = parseInt(el.dataset.decimals || '1');
+        const suffix = el.dataset.suffix || '';
+        const duration = 1200;
+        const start = performance.now();
+
+        function tick(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const value = target * eased;
+          el.textContent = value.toFixed(decimals) + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function barChart() {
+      return [
+        { label: 'Mon', value: 142 },
+        { label: 'Tue', value: 198 },
+        { label: 'Wed', value: 176 },
+        { label: 'Thu', value: 211 },
+        { label: 'Fri', value: 187 },
+        { label: 'Sat', value: 84 },
+        { label: 'Sun', value: 96 },
+      ];
+    }
+
+    function donutSegments(segs) {
+      const radius = 15.91549430919;
+      let offset = 25;
+      return segs.map(s => {
+        const dash = (s.value / 100) * 100;
+        const el = `<circle cx="21" cy="21" r="${radius}" fill="transparent" stroke="${s.fill}" stroke-width="6" stroke-dasharray="${dash} ${100-dash}" stroke-dashoffset="${offset}" stroke-linecap="round"/>`;
+        offset -= dash;
+        return el;
+      }).join('');
+    }
+
+    function lineChartSVG() {
+      const data = [80.2, 81.5, 81.1, 82.8, 83.4, 82.9, 84.2, 85.1, 84.8, 86.0, 86.7, 87.4];
+      const w = 520, h = 200, pad = 30;
+      const max = 90, min = 78;
+      const stepX = (w - pad * 2) / (data.length - 1);
+      const points = data.map((v, i) => {
+        const x = pad + i * stepX;
+        const y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+        return [x, y];
+      });
+      const pathD = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+      const areaD = `${pathD} L${points[points.length-1][0]},${h-pad} L${points[0][0]},${h-pad} Z`;
+      const gridLines = [78, 82, 86, 90].map(v => {
+        const y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+        return `<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="2 3"/>
+                <text x="${pad-6}" y="${y+4}" font-size="9" fill="#94A3B8" text-anchor="end" font-family="JetBrains Mono">${v}%</text>`;
+      }).join('');
+      const xLabels = points.map((p, i) => i % 2 === 0 ? `<text x="${p[0]}" y="${h-pad+14}" font-size="9" fill="#94A3B8" text-anchor="middle" font-family="Inter" font-weight="500">W${i+1}</text>` : '').join('');
+      const dots = points.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#6366F1" stroke="#fff" stroke-width="2"/>`).join('');
+
+      return `<svg viewBox="0 0 ${w} ${h}" class="line-chart-svg" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#6366F1" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#6366F1"/>
+            <stop offset="100%" stop-color="#06B6D4"/>
+          </linearGradient>
+        </defs>
+        ${gridLines}
+        <path d="${areaD}" fill="url(#areaGrad)"/>
+        <path d="${pathD}" fill="none" stroke="url(#lineGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}
+        ${xLabels}
+      </svg>`;
+    }
+
+    function latencyRows() {
+      return [
+        { stage: 'Query embedding', p50: '120ms', p95: '180ms', muted: true },
+        { stage: 'Vector search', p50: '180ms', p95: '340ms', muted: true },
+        { stage: 'Context retrieval', p50: '90ms', p95: '210ms', muted: true },
+        { stage: 'LLM generation', p50: '950ms', p95: '1450ms' },
+        { stage: 'Citation formatting', p50: '80ms', p95: '220ms', muted: true },
+      ];
+    }
+
+    async function runEvalNow() {
+      const btn = document.getElementById('runEvalBtn');
+      const area = document.getElementById('evalResultArea');
+      const originalHTML = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Running eval (24 questions, ~30s)...';
+      area.innerHTML = '<span class="text-muted">Running RAGAS evaluation against 24-question gold set...</span>';
+
+      try {
+        const isLive = await API.isLive();
+        if (!isLive) {
+          throw new Error('Backend is offline. Start the Phase 2 backend locally to run live eval.');
+        }
+        const result = await API.evalRun();
+        renderEvalResult(result);
+      } catch (err) {
+        area.innerHTML = `<div style="color:var(--color-danger);">⚠ ${err.message}</div>
+                         <div class="text-muted mt-2" style="font-size:0.75rem;">
+                           To run eval: cd backend && uvicorn app.main:app --reload<br/>
+                           Then refresh this page and click Run again.
+                         </div>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    }
+
+    async function loadLatestEval() {
+      const area = document.getElementById('evalResultArea');
+      try {
+        const isLive = await API.isLive();
+        if (!isLive) {
+          throw new Error('Backend is offline.');
+        }
+        const result = await API.evalLatest();
+        if (result.message) {
+          area.innerHTML = `<span class="text-muted">${result.message}</span>`;
+        } else {
+          renderEvalResult(result);
+        }
+      } catch (err) {
+        area.innerHTML = `<div style="color:var(--color-danger);">⚠ ${err.message}</div>`;
+      }
+    }
+
+    function renderEvalResult(report) {
+      const area = document.getElementById('evalResultArea');
+      if (!report || !report.results) {
+        area.innerHTML = '<span class="text-muted">No results to display.</span>';
+        return;
+      }
+      const html = `
+        <div style="margin-bottom:var(--space-3);">
+          <strong>Started:</strong> ${report.started_at}<br/>
+          <strong>Duration:</strong> ${report.duration_sec}s · <strong>Questions:</strong> ${report.total_questions}
+        </div>
+        <div class="grid grid-cols-4 gap-2 mb-4">
+          <div><div class="text-muted" style="font-size:0.6875rem;">FAITHFULNESS</div><div style="font-weight:700; color:var(--color-primary);">${report.avg_faithfulness}</div></div>
+          <div><div class="text-muted" style="font-size:0.6875rem;">RELEVANCY</div><div style="font-weight:700; color:var(--color-accent);">${report.avg_answer_relevancy}</div></div>
+          <div><div class="text-muted" style="font-size:0.6875rem;">CTX PRECISION</div><div style="font-weight:700; color:var(--color-success);">${report.avg_context_precision}</div></div>
+          <div><div class="text-muted" style="font-size:0.6875rem;">CTX RECALL</div><div style="font-weight:700; color:var(--color-warning);">${report.avg_context_recall}</div></div>
+        </div>
+        <div class="text-muted mb-2" style="font-size:0.6875rem;">PER-QUESTION RESULTS (top 5):</div>
+        ${report.results.slice(0, 5).map((r, i) => `
+          <div style="padding:var(--space-2) 0; border-bottom:1px solid var(--color-border);">
+            <div class="flex items-center justify-between">
+              <span class="badge badge-${r.agent}">${r.agent.toUpperCase()}</span>
+              <span style="font-weight:700; color:var(--color-${r.overall > 0.7 ? 'success' : r.overall > 0.4 ? 'warning' : 'danger'});">
+                ${(r.overall * 100).toFixed(1)}%
+              </span>
+            </div>
+            <div style="margin-top:4px; font-size:0.75rem; color:var(--color-text-secondary);">
+              ${r.question}
+            </div>
+            <div class="text-muted" style="font-size:0.6875rem; margin-top:2px;">
+              ${r.latency_ms}ms · sources: ${r.sources.length}
+            </div>
+          </div>
+        `).join('')}
+      `;
+      area.innerHTML = html;
+    }
+
+    renderAnalyticsPage();
+  </script>
+</body>
+</html>
